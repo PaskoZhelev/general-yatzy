@@ -1,0 +1,370 @@
+/* src/App.css */
+
+:root {
+  --text-main: #e6e6fa;
+  --text-muted: #a0a0b0;
+  --text-filled: #5a6a7a;
+  --board-bg: #16213e;
+  --board-border: #0f3460;
+  --die-bg: #1f2a4c;
+  --die-border: #e94560;
+  --die-text: #ffffff;
+  --die-held-bg: #e94560;
+  --row-border: #2a3a5c;
+  --row-hover: #0f3460;
+  --subtotal-bg: #1a2a4c;
+  --subtotal-border: #0f3460;
+  --btn-bg: #0f3460;
+  --btn-disabled: #2a3a5c;
+  --panel-shadow: rgba(0,0,0,0.3);
+  --success-color: #2ecc71;
+  --player-color: #3498db;
+  --body-bg: #1a1a2e;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--body-bg);
+  color: var(--text-main);
+}
+
+.app-container {
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1200px; 
+  margin: 0 auto;
+  text-align: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+
+.header-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--text-main);
+}
+
+.game-status {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--text-muted);
+  min-height: 24px;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.boards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  flex: 1;
+  max-width: 800px;
+}
+
+/* NEW: Wrapper for the right side elements */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 20px;
+  width: 280px;
+  box-sizing: border-box;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--board-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--panel-shadow);
+  border: 1px solid var(--board-border);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dice-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap; 
+}
+
+.die {
+  width: 55px;
+  height: 55px;
+  background: var(--die-bg);
+  color: var(--die-text);
+  border: 2px solid var(--die-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px var(--panel-shadow);
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s, background 0.2s;
+}
+
+.die.held {
+  background: var(--die-held-bg);
+  color: white;
+  border-color: var(--die-held-bg);
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.roll-btn {
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  background: var(--btn-bg);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  touch-action: manipulation;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.roll-btn:disabled {
+  background: var(--btn-disabled);
+  cursor: not-allowed;
+}
+
+.roll-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* --- MATCH LOG STYLES --- */
+.history-container {
+  background: var(--board-bg);
+  border: 1px solid var(--board-border);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  max-height: 450px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.history-container h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--row-border);
+  padding-bottom: 8px;
+  text-align: left;
+}
+
+.history-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 5px;
+}
+
+/* Custom Scrollbar for the log */
+.history-list::-webkit-scrollbar { width: 6px; }
+.history-list::-webkit-scrollbar-track { background: var(--subtotal-bg); border-radius: 3px; }
+.history-list::-webkit-scrollbar-thumb { background: var(--text-filled); border-radius: 3px; }
+
+.history-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.history-item {
+  background: var(--subtotal-bg);
+  border: 1px solid var(--subtotal-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+.history-item.player { border-left: 3px solid var(--player-color); }
+.history-item.bot { border-left: 3px solid var(--die-held-bg); }
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.history-player { color: var(--text-main); }
+.history-points { color: var(--success-color); }
+.history-action { font-size: 0.9rem; color: var(--text-muted); }
+
+.history-dice {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.mini-die {
+  background: var(--die-bg);
+  color: var(--die-text);
+  border: 1px solid var(--die-border);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* --- SCORECARD STYLES --- */
+.scorecard {
+  width: 100%;
+  border: 1px solid var(--board-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--board-bg);
+  box-shadow: 0 2px 8px var(--panel-shadow);
+  box-sizing: border-box;
+  color: var(--text-main);
+}
+
+.scorecard h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--row-border);
+  cursor: pointer;
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.score-row.subtotal {
+  background-color: var(--subtotal-bg);
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-bottom: 2px solid var(--subtotal-border);
+  cursor: default;
+}
+
+.score-row.open:hover, .score-row.open:active {
+  background: var(--row-hover);
+  border-radius: 4px;
+}
+
+.score-row.filled {
+  color: var(--text-filled);
+  cursor: default;
+}
+
+.score-row.bonus, .score-row.total {
+  font-weight: bold;
+  margin-top: 8px;
+  border-top: 2px solid var(--text-main);
+  padding-top: 8px;
+  font-size: 1.1rem;
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .main-layout {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .right-panel {
+    /* This magically "removes" the wrapper on mobile, allowing its 
+       children to join the main-layout flexbox! */
+    display: contents; 
+  }
+
+  .controls-container {
+    order: -1; /* Pushes the dice and roll button to the very top */
+    position: static;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 600px;
+    padding: 15px;
+  }
+  
+  .boards-container {
+    order: 0; /* Keeps boards in the middle */
+    width: 100%;
+  }
+
+  .history-container {
+    order: 1; /* Pushes the history log to the very bottom */
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 30px; /* Adds a little breathing room at the bottom of the page */
+  }
+  
+  .dice-container {
+    margin-bottom: 0;
+  }
+  
+  .roll-btn {
+    width: auto;
+    padding: 15px 30px;
+  }
+}
+
+@media (max-width: 650px) {
+  .header-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .boards-container {
+    grid-template-columns: 1fr; 
+  }
+  
+  .controls-container {
+    flex-direction: column;
+  }
+  
+  .dice-container {
+    margin-bottom: 15px;
+  }
+  
+  .roll-btn {
+    width: 100%;
+  }
+}
