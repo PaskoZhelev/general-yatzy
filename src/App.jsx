@@ -13,38 +13,55 @@ function App() {
   const [turn, setTurn] = useState('player');
   const [scores, setScores] = useState({ player: {}, bot: {} });
   const [message, setMessage] = useState("Your turn! Roll the dice.");
-  
-  // New state for the history log
   const [history, setHistory] = useState([]);
 
+  // Check if every category is filled for both players
+  const isGameOver = Object.keys(scores.player).length === CATEGORIES.length && 
+                     Object.keys(scores.bot).length === CATEGORIES.length;
+
+  let winnerMessage = "";
+  if (isGameOver) {
+    const pUpper = calculateUpperTotal(scores.player);
+    const bUpper = calculateUpperTotal(scores.bot);
+    const pTotal = Object.values(scores.player).reduce((a, b) => a + b, 0) + pUpper.bonus;
+    const bTotal = Object.values(scores.bot).reduce((a, b) => a + b, 0) + bUpper.bonus;
+
+    if (pTotal > bTotal) winnerMessage = `🏆 You win! ${pTotal} to ${bTotal}`;
+    else if (bTotal > pTotal) winnerMessage = `🤖 Bot wins! ${bTotal} to ${pTotal}`;
+    else winnerMessage = `🤝 It's a tie! ${pTotal} to ${bTotal}`;
+  }
+
+  const resetGame = () => {
+    setScores({ player: {}, bot: {} });
+    setDice(INITIAL_DICE);
+    setHeld([false, false, false, false, false]);
+    setRollsLeft(3);
+    setTurn('player');
+    setMessage("Your turn! Roll the dice.");
+    setHistory([]);
+  };
+
   const rollDice = (currentHeld = held) => {
-    if (rollsLeft === 0) return;
+    if (rollsLeft === 0 || isGameOver) return;
     setDice(prev => prev.map((d, i) => currentHeld[i] ? d : Math.floor(Math.random() * 6) + 1));
     setRollsLeft(prev => prev - 1);
   };
 
   const toggleHold = (index) => {
-    if (rollsLeft === 3 || turn !== 'player') return;
+    if (rollsLeft === 3 || turn !== 'player' || isGameOver) return;
     const newHeld = [...held];
     newHeld[index] = !newHeld[index];
     setHeld(newHeld);
   };
 
   const scoreCategory = (category) => {
-    if (scores[turn][category] !== undefined || rollsLeft === 3) return;
+    if (scores[turn][category] !== undefined || rollsLeft === 3 || isGameOver) return;
     
     const points = calculateScore(dice, category, scores[turn]);
     
-    // Log the turn to history before wiping the dice
     setHistory(prev => [
-      { 
-        id: Date.now(), 
-        player: turn, 
-        category, 
-        dice: [...dice], 
-        points 
-      },
-      ...prev // Prepend so newest is at the top
+      { id: Date.now(), player: turn, category, dice: [...dice], points },
+      ...prev
     ]);
 
     setScores(prev => ({
@@ -65,7 +82,7 @@ function App() {
 
   useEffect(() => {
     const playBotTurn = async () => {
-      if (turn !== 'bot') return;
+      if (turn !== 'bot' || isGameOver) return;
 
       if (rollsLeft === 3) {
         await delay(1000);
@@ -93,11 +110,11 @@ function App() {
     };
 
     playBotTurn();
-  }, [turn, rollsLeft, dice]);
+  }, [turn, rollsLeft, dice, isGameOver]);
 
   const renderCategoryRow = (cat, playerKey) => {
     const isAvailable = scores[playerKey][cat] === undefined;
-    const showPreview = turn === playerKey && playerKey === 'player' && rollsLeft < 3;
+    const showPreview = turn === playerKey && playerKey === 'player' && rollsLeft < 3 && !isGameOver;
     
     return (
       <div 
@@ -125,18 +142,12 @@ function App() {
     return (
       <div className="scorecard">
         <h3>{playerKey.toUpperCase()}</h3>
-        
         {upperCategories.map(cat => renderCategoryRow(cat, playerKey))}
-        
         <div className="score-row subtotal">
           <span>Upper Sum</span>
-          <span style={{ color: upper.sum >= 63 ? 'var(--success-color)' : 'inherit' }}>
-            {upper.sum} / 63
-          </span>
+          <span style={{ color: upper.sum >= 63 ? 'var(--success-color)' : 'inherit' }}>{upper.sum} / 63</span>
         </div>
-
         {lowerCategories.map(cat => renderCategoryRow(cat, playerKey))}
-        
         <div className="score-row bonus"><span>Bonus:</span><span>{upper.bonus}</span></div>
         <div className="score-row total"><span>TOTAL:</span><span>{total}</span></div>
       </div>
@@ -145,22 +156,31 @@ function App() {
 
   return (
     <div className="app-container">
+      
+      {/* Game Over Modal */}
+      {isGameOver && (
+        <div className="game-over-overlay">
+          <div className="game-over-modal">
+            <h2>Game Over!</h2>
+            <p className="winner-announcement">{winnerMessage}</p>
+            <button onClick={resetGame} className="restart-btn">Play Again</button>
+          </div>
+        </div>
+      )}
+
       <div className="header-container">
         <h1>Yatzy: The General</h1>
       </div>
       
-      <div className="game-status">{message}</div>
+      <div className="game-status">{isGameOver ? "Game Finished!" : message}</div>
       
       <div className="main-layout">
-        {/* LEFT SIDE: Scoreboards */}
         <div className="boards-container">
           {renderScorecard('player')}
           {renderScorecard('bot')}
         </div>
 
-        {/* RIGHT SIDE: Dice, Controls & History */}
         <div className="right-panel">
-          
           <div className="controls-container">
             <div className="dice-container">
               {dice.map((d, i) => (
@@ -170,7 +190,7 @@ function App() {
               ))}
             </div>
             
-            <button className="roll-btn" onClick={() => rollDice()} disabled={turn !== 'player' || rollsLeft === 0}>
+            <button className="roll-btn" onClick={() => rollDice()} disabled={turn !== 'player' || rollsLeft === 0 || isGameOver}>
               Roll ({rollsLeft} left)
             </button>
           </div>
@@ -198,7 +218,6 @@ function App() {
               )}
             </div>
           </div>
-
         </div>
       </div>
     </div>

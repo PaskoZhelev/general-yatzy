@@ -368,3 +368,67 @@ h1 {
     width: 100%;
   }
 }
+
+/* --- GAME OVER MODAL --- */
+.game-over-overlay {
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.game-over-modal {
+  background: var(--board-bg);
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid var(--board-border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  width: 90%;
+  max-width: 450px;
+}
+
+.game-over-modal h2 {
+  margin-top: 0;
+  font-size: 2.5rem;
+  color: var(--text-main);
+}
+
+.winner-announcement {
+  font-size: 1.8rem;
+  color: var(--success-color);
+  font-weight: bold;
+  margin: 20px 0 30px 0;
+}
+
+.restart-btn {
+  padding: 15px 40px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  background: var(--player-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s;
+}
+
+.restart-btn:hover {
+  filter: brightness(1.2);
+}
+
+.restart-btn:active {
+  transform: scale(0.95);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
