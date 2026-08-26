@@ -46,7 +46,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 10px 0;
+  margin: 5px 0;
 }
 
 h1 {
@@ -58,7 +58,7 @@ h1 {
 .game-status {
   font-size: 1.1rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   color: var(--text-muted);
   min-height: 24px;
 }
@@ -369,7 +369,7 @@ h1 {
   }
 
   .header-container {
-    margin: 4px 0;
+    margin: 1px 0;
   }
 
   h1 {
@@ -378,7 +378,7 @@ h1 {
 
   .game-status {
     font-size: 0.85rem;
-    margin-bottom: 8px;
+    margin-bottom: 1px;
     min-height: 18px;
   }
 
@@ -427,7 +427,7 @@ h1 {
   }
 
   .score-row {
-    padding: 6px 5px;
+    padding: 7px 6px;
     font-size: 0.62rem;
     line-height: 1.2;
   }
