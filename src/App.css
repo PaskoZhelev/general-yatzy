@@ -389,7 +389,7 @@ h1 {
   /* Keep both boards side-by-side so everything fits on one screen */
   .boards-container {
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    gap: 10px;
   }
 
   .controls-container {
@@ -427,7 +427,7 @@ h1 {
   }
 
   .score-row {
-    padding: 2px 3px;
+    padding: 5px 4px;
     font-size: 0.62rem;
     line-height: 1.2;
   }
