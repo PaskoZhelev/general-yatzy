@@ -7,9 +7,11 @@
   --board-bg: #16213e;
   --board-border: #0f3460;
   --die-bg: #1f2a4c;
-  --die-border: #e94560;
+  --die-border: #ffffff;
   --die-text: #ffffff;
-  --die-held-bg: #e94560;
+  --die-held-bg: #27ae60;
+  --die-unrolled-border: #3a4a6c;
+  --die-unrolled-text: #5a6a8a;
   --row-border: #2a3a5c;
   --row-hover: #0f3460;
   --subtotal-bg: #1a2a4c;
@@ -32,6 +34,7 @@ body {
 
 .app-container {
   font-family: system-ui, -apple-system, sans-serif;
+  width: 100%;
   max-width: 1200px; 
   margin: 0 auto;
   text-align: center;
@@ -133,6 +136,15 @@ h1 {
   color: white;
   border-color: var(--die-held-bg);
   transform: translateY(2px);
+  box-shadow: none;
+}
+
+.die.unrolled {
+  background: var(--die-bg);
+  color: var(--die-unrolled-text);
+  border-color: var(--die-unrolled-border);
+  border-style: dashed;
+  cursor: default;
   box-shadow: none;
 }
 
@@ -291,6 +303,11 @@ h1 {
   cursor: default;
 }
 
+.score-row.scorable {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
 .score-row.bonus, .score-row.total {
   font-weight: bold;
   margin-top: 8px;
@@ -347,25 +364,87 @@ h1 {
 }
 
 @media (max-width: 650px) {
+  .app-container {
+    padding: 6px 8px;
+  }
+
   .header-container {
-    flex-direction: column;
+    margin: 4px 0;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  .game-status {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    min-height: 18px;
+  }
+
+  .main-layout {
     gap: 10px;
   }
 
+  /* Keep both boards side-by-side so everything fits on one screen */
   .boards-container {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
-  
+
   .controls-container {
-    flex-direction: column;
+    flex-direction: row;
+    padding: 6px;
+    gap: 8px;
   }
-  
+
   .dice-container {
-    margin-bottom: 15px;
+    margin-bottom: 0;
+    gap: 4px;
   }
-  
+
+  .die {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+    border-radius: 5px;
+  }
+
   .roll-btn {
-    width: 100%;
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .scorecard {
+    padding: 4px;
+    border-radius: 6px;
+  }
+
+  .scorecard h3 {
+    font-size: 0.8rem;
+    margin: 0 0 4px 0;
+  }
+
+  .score-row {
+    padding: 2px 3px;
+    font-size: 0.62rem;
+    line-height: 1.2;
+  }
+
+  .score-row.subtotal {
+    font-size: 0.6rem;
+  }
+
+  .score-row.bonus, .score-row.total {
+    margin-top: 3px;
+    padding-top: 3px;
+    font-size: 0.68rem;
+  }
+
+  .history-container {
+    padding: 8px;
+    max-height: 250px;
   }
 }
 

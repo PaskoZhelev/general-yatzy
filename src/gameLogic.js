@@ -6,8 +6,8 @@ export const CATEGORIES = [
 
 export const CATEGORY_NAMES = {
   ones: '1s', twos: '2s', threes: '3s', fours: '4s', fives: '5s', sixes: '6s',
-  onePair: 'One Pair', twoPair: 'Two Pair', threeOfAKind: 'Three of a Kind',
-  fourOfAKind: 'Four of a Kind', fullHouse: 'Full House', 
+  onePair: '2', twoPair: '2+2', threeOfAKind: '3',
+  fourOfAKind: '4', fullHouse: '3+2', 
   even: 'Even', odd: 'Odd', smallStraight: 'Small Straight', largeStraight: 'Large Straight', 
   general: 'General', smallChance: 'Small Chance', largeChance: 'Large Chance'
 };
@@ -65,13 +65,13 @@ export const calculateScore = (dice, category, currentScores = {}) => {
       return dice.every(d => d % 2 !== 0) ? sum : 0;
       
     case 'smallStraight': {
-      if (isGeneral && currentScores.general !== undefined) return 30;
+      if (isGeneral) return 30;
       const sorted = [...new Set(dice)].sort().join('');
       return sorted === '12345' ? 30 : 0;
     }
     
     case 'largeStraight': {
-      if (isGeneral && currentScores.general !== undefined) return 40;
+      if (isGeneral) return 40;
       const sorted = [...new Set(dice)].sort().join('');
       return sorted === '23456' ? 40 : 0;
     }

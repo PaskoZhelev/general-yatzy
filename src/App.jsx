@@ -101,11 +101,10 @@ function App() {
         
         await delay(1000);
         rollDice(newHeld); 
-      } else if (decision.action === 'score' || rollsLeft === 0) {
-        const finalDecision = rollsLeft === 0 ? decision : getBotAction(dice, scores.bot, 0);
-        setMessage(`Bot scores in ${CATEGORY_NAMES[finalDecision.category]}`);
+      } else if (decision.action === 'score') {
+        setMessage(`Bot scores in ${CATEGORY_NAMES[decision.category]}`);
         await delay(1500);
-        scoreCategory(finalDecision.category);
+        scoreCategory(decision.category);
       }
     };
 
@@ -115,18 +114,20 @@ function App() {
   const renderCategoryRow = (cat, playerKey) => {
     const isAvailable = scores[playerKey][cat] === undefined;
     const showPreview = turn === playerKey && playerKey === 'player' && rollsLeft < 3 && !isGameOver;
+    const previewScore = showPreview ? calculateScore(dice, cat, scores[playerKey]) : null;
+    const isScorable = isAvailable && showPreview && previewScore > 0;
     
     return (
       <div 
         key={cat} 
-        className={`score-row ${isAvailable ? 'open' : 'filled'}`}
+        className={`score-row ${isAvailable ? 'open' : 'filled'} ${isScorable ? 'scorable' : ''}`}
         onClick={() => isAvailable && showPreview && scoreCategory(cat)}
       >
         <span>{CATEGORY_NAMES[cat]}</span>
         <span>
           {!isAvailable 
             ? scores[playerKey][cat] 
-            : (showPreview ? calculateScore(dice, cat, scores[playerKey]) : '-')}
+            : (showPreview ? previewScore : '-')}
         </span>
       </div>
     );
@@ -183,11 +184,19 @@ function App() {
         <div className="right-panel">
           <div className="controls-container">
             <div className="dice-container">
-              {dice.map((d, i) => (
-                <div key={i} className={`die ${held[i] ? 'held' : ''}`} onClick={() => toggleHold(i)}>
-                  {d}
-                </div>
-              ))}
+              {/* Held dice are sorted to the front, but each die keeps its original index for hold/roll logic */}
+              {dice
+                .map((d, i) => i)
+                .sort((a, b) => (held[b] ? 1 : 0) - (held[a] ? 1 : 0))
+                .map(i => (
+                  <div
+                    key={i}
+                    className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')}`}
+                    onClick={() => toggleHold(i)}
+                  >
+                    {rollsLeft === 3 ? '?' : dice[i]}
+                  </div>
+                ))}
             </div>
             
             <button className="roll-btn" onClick={() => rollDice()} disabled={turn !== 'player' || rollsLeft === 0 || isGameOver}>
