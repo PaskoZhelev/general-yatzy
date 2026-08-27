@@ -139,6 +139,11 @@ export const getBotAction = (dice, scores, rollsLeft) => {
     if (openCategories.includes(upperNames[i - 1])) score += 25;
     if (multipleCategoryOpen) score += 3;
 
+    // Four of a kind is just one die away from a General (up to 100 pts) - too
+    // valuable to pass up for a same-turn Even/Odd/etc. score while rerolls
+    // remain, even if the matching upper category is already filled in.
+    if (counts[i] >= 4) score += 40;
+
     // Use >= so that among equal-count multiples (e.g. a pair of 4s vs a pair
     // of 5s), the higher face value wins the tie - it's worth strictly more
     // for General/of-a-kind categories and for the upper section itself.
