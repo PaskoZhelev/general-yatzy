@@ -9,6 +9,7 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 function App() {
   const [dice, setDice] = useState(INITIAL_DICE);
   const [held, setHeld] = useState([false, false, false, false, false]);
+  const [rollingDice, setRollingDice] = useState([false, false, false, false, false]);
   const [rollsLeft, setRollsLeft] = useState(3);
   const [turn, setTurn] = useState('player');
   const [scores, setScores] = useState({ player: {}, bot: {} });
@@ -35,6 +36,7 @@ function App() {
     setScores({ player: {}, bot: {} });
     setDice(INITIAL_DICE);
     setHeld([false, false, false, false, false]);
+    setRollingDice([false, false, false, false, false]);
     setRollsLeft(3);
     setTurn('player');
     setMessage("Your turn! Roll the dice.");
@@ -43,8 +45,11 @@ function App() {
 
   const rollDice = (currentHeld = held) => {
     if (rollsLeft === 0 || isGameOver) return;
+    // Briefly flag the non-held dice so the CSS animation can play
+    setRollingDice(currentHeld.map(h => !h));
     setDice(prev => prev.map((d, i) => currentHeld[i] ? d : Math.floor(Math.random() * 6) + 1));
     setRollsLeft(prev => prev - 1);
+    setTimeout(() => setRollingDice([false, false, false, false, false]), 300);
   };
 
   const toggleHold = (index) => {
@@ -74,6 +79,7 @@ function App() {
 
   const endTurn = () => {
     setHeld([false, false, false, false, false]);
+    setRollingDice([false, false, false, false, false]);
     setRollsLeft(3);
     setDice([1, 1, 1, 1, 1]);
     setTurn(turn === 'player' ? 'bot' : 'player');
@@ -191,7 +197,7 @@ function App() {
                 .map(i => (
                   <div
                     key={i}
-                    className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')}`}
+                    className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')} ${rollingDice[i] ? 'rolling' : ''}`}
                     onClick={() => toggleHold(i)}
                   >
                     {rollsLeft === 3 ? '?' : dice[i]}

@@ -148,6 +148,18 @@ h1 {
   box-shadow: none;
 }
 
+.die.rolling {
+  animation: dieRoll 0.3s ease-in-out;
+}
+
+@keyframes dieRoll {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-18deg) scale(1.08); }
+  50% { transform: rotate(14deg) scale(0.92); }
+  75% { transform: rotate(-10deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
 .roll-btn {
   padding: 15px 20px;
   font-size: 1.2rem;

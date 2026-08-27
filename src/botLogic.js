@@ -212,6 +212,10 @@ export const getBotAction = (dice, scores, rollsLeft) => {
   }
 
   if (bestIndices.length > 0) {
+    // Holding all 5 dice would leave the roll unchanged - score now instead of wasting rerolls.
+    if (bestIndices.length === dice.length) {
+      return getBotAction(dice, scores, 0);
+    }
     return { action: 'hold', holdIndices: bestIndices };
   }
 
