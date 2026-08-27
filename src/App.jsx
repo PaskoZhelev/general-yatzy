@@ -147,7 +147,7 @@ function App() {
     const lowerCategories = CATEGORIES.slice(6);
 
     return (
-      <div className="scorecard">
+      <div className={`scorecard ${playerKey}`}>
         <h3>{playerKey.toUpperCase()}</h3>
         {upperCategories.map(cat => renderCategoryRow(cat, playerKey))}
         <div className="score-row subtotal">

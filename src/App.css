@@ -1,27 +1,30 @@
 /* src/App.css */
 
 :root {
-  --text-main: #e6e6fa;
-  --text-muted: #a0a0b0;
-  --text-filled: #5a6a7a;
-  --board-bg: #16213e;
-  --board-border: #0f3460;
-  --die-bg: #1f2a4c;
-  --die-border: #ffffff;
-  --die-text: #ffffff;
+  --text-main: #eef1fa;
+  --text-muted: #8e96b8;
+  --text-filled: #5f6a8c;
+  --board-bg: #1a1f3d;
+  --board-border: #2e3868;
+  --die-bg: #232a52;
+  --die-border: #4b5890;
+  --die-text: #f5f7ff;
   --die-held-bg: #27ae60;
-  --die-unrolled-border: #3a4a6c;
-  --die-unrolled-text: #5a6a8a;
-  --row-border: #2a3a5c;
-  --row-hover: #0f3460;
-  --subtotal-bg: #1a2a4c;
-  --subtotal-border: #0f3460;
-  --btn-bg: #0f3460;
-  --btn-disabled: #2a3a5c;
-  --panel-shadow: rgba(0,0,0,0.3);
-  --success-color: #2ecc71;
-  --player-color: #3498db;
-  --body-bg: #1a1a2e;
+  --die-held-text: #ffffff;
+  --die-unrolled-border: #333c6e;
+  --die-unrolled-text: #4b5890;
+  --row-border: #262c54;
+  --row-hover: #242c58;
+  --subtotal-bg: #1f2549;
+  --subtotal-border: #2e3868;
+  --btn-bg: linear-gradient(135deg, #4f7cf6, #7c5cf0);
+  --btn-disabled: #2a3057;
+  --panel-shadow: rgba(0,0,0,0.35);
+  --success-color: #34d399;
+  --player-color: #38bdf8;
+  --bot-color: #fb7185;
+  --body-bg: #0f1226;
+  --body-bg-2: #1a1030;
 }
 
 body {
@@ -29,6 +32,8 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--body-bg);
+  background-image: radial-gradient(circle at top, var(--body-bg-2), var(--body-bg) 60%);
+  background-attachment: fixed;
   color: var(--text-main);
 }
 
@@ -133,10 +138,10 @@ h1 {
 
 .die.held {
   background: var(--die-held-bg);
-  color: white;
+  color: var(--die-held-text);
   border-color: var(--die-held-bg);
   transform: translateY(2px);
-  box-shadow: none;
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
 }
 
 .die.unrolled {
@@ -237,7 +242,7 @@ h1 {
 }
 
 .history-item.player { border-left: 3px solid var(--player-color); }
-.history-item.bot { border-left: 3px solid var(--die-held-bg); }
+.history-item.bot { border-left: 3px solid var(--bot-color); }
 
 .history-header {
   display: flex;
@@ -274,6 +279,7 @@ h1 {
 .scorecard {
   width: 100%;
   border: 1px solid var(--board-border);
+  border-top: 3px solid var(--board-border);
   border-radius: 8px;
   padding: 10px;
   background: var(--board-bg);
@@ -282,10 +288,16 @@ h1 {
   color: var(--text-main);
 }
 
+.scorecard.player { border-top-color: var(--player-color); }
+.scorecard.bot { border-top-color: var(--bot-color); }
+
 .scorecard h3 {
   margin: 0 0 10px 0;
   font-size: 1.2rem;
 }
+
+.scorecard.player h3 { color: var(--player-color); }
+.scorecard.bot h3 { color: var(--bot-color); }
 
 .score-row {
   display: flex;
