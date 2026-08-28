@@ -80,7 +80,10 @@ export const calculateScore = (dice, category, currentScores = {}) => {
       for (let i = 1; i <= 6; i++) if (counts[i] === 5) return (i * 10) + 40;
       return 0;
       
-    case 'smallChance': return sum;
+    case 'smallChance': {
+      if (currentScores.largeChance !== undefined && sum > currentScores.largeChance) return 0;
+      return sum;
+    }
     
     case 'largeChance': {
       if (currentScores.smallChance !== undefined && sum < currentScores.smallChance) return 0;
