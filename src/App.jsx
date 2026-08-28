@@ -10,6 +10,7 @@ function App() {
   const [dice, setDice] = useState(INITIAL_DICE);
   const [held, setHeld] = useState([false, false, false, false, false]);
   const [rollingDice, setRollingDice] = useState([false, false, false, false, false]);
+  const [diceOrder, setDiceOrder] = useState([0, 1, 2, 3, 4]);
   const [rollsLeft, setRollsLeft] = useState(3);
   const [turn, setTurn] = useState('player');
   const [scores, setScores] = useState({ player: {}, bot: {} });
@@ -37,6 +38,7 @@ function App() {
     setDice(INITIAL_DICE);
     setHeld([false, false, false, false, false]);
     setRollingDice([false, false, false, false, false]);
+    setDiceOrder([0, 1, 2, 3, 4]);
     setRollsLeft(3);
     setTurn('player');
     setMessage("Your turn! Roll the dice.");
@@ -49,6 +51,8 @@ function App() {
     setRollingDice(currentHeld.map(h => !h));
     setDice(prev => prev.map((d, i) => currentHeld[i] ? d : Math.floor(Math.random() * 6) + 1));
     setRollsLeft(prev => prev - 1);
+    // Held dice only shift to the front once a new roll happens, not on click
+    setDiceOrder([0, 1, 2, 3, 4].sort((a, b) => (currentHeld[b] ? 1 : 0) - (currentHeld[a] ? 1 : 0)));
     setTimeout(() => setRollingDice([false, false, false, false, false]), 300);
   };
 
@@ -80,6 +84,7 @@ function App() {
   const endTurn = () => {
     setHeld([false, false, false, false, false]);
     setRollingDice([false, false, false, false, false]);
+    setDiceOrder([0, 1, 2, 3, 4]);
     setRollsLeft(3);
     setDice([1, 1, 1, 1, 1]);
     setTurn(turn === 'player' ? 'bot' : 'player');
@@ -191,10 +196,7 @@ function App() {
           <div className="controls-container">
             <div className="dice-container">
               {/* Held dice are sorted to the front, but each die keeps its original index for hold/roll logic */}
-              {dice
-                .map((d, i) => i)
-                .sort((a, b) => (held[b] ? 1 : 0) - (held[a] ? 1 : 0))
-                .map(i => (
+              {diceOrder.map(i => (
                   <div
                     key={i}
                     className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')} ${rollingDice[i] ? 'rolling' : ''}`}
