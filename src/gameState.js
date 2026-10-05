@@ -56,7 +56,7 @@ export const gameReducer = (state, action) => {
       return { ...state, rolling: NO_DICE };
 
     case 'TOGGLE_HOLD': {
-      if (state.turn !== 'player' || state.rollsLeft === 3 || state.rollsLeft === 0 || over) return state;
+      if (state.turn !== 'player' || state.rollsLeft === 3 || over) return state;
       const held = [...state.held];
       held[action.index] = !held[action.index];
       return { ...state, held };
