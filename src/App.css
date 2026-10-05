@@ -395,6 +395,11 @@ h1 {
   transform: scale(0.97);
 }
 
+/* While choosing, fade already-filled rows so open ones (even zeros) stand out */
+.board.picking .board-row:not(.pickable) {
+  opacity: 0.4;
+}
+
 .row-label {
   font-weight: 600;
   font-size: 0.95rem;

@@ -206,7 +206,7 @@ function App() {
       <div className="game-status">{isGameOver ? "Game Finished!" : message}</div>
       
       <div className="main-layout">
-        <div className="board">
+        <div className={`board ${turn === 'player' && rollsLeft < 3 && !isGameOver ? 'picking' : ''}`}>
           <div className="board-columns">
             {renderColumn(LEFT_COLUMN)}
             {renderColumn(RIGHT_COLUMN)}
