@@ -44,23 +44,25 @@ body {
 }
 
 .header-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
+  gap: 8px;
   margin: 5px 0;
 }
 
-.header-actions {
-  position: absolute;
-  right: 0;
-  display: flex;
-  gap: 6px;
+.stats-btn {
+  justify-self: start;
+}
+
+.new-game-btn {
+  justify-self: end;
 }
 
 .header-btn {
   padding: 4px 10px;
   font-size: 0.8rem;
+  white-space: nowrap;
   background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--board-border);
@@ -432,6 +434,11 @@ h1 {
 
   h1 {
     font-size: 1.1rem;
+  }
+
+  .header-btn {
+    padding: 3px 7px;
+    font-size: 0.7rem;
   }
 
   .game-status {
