@@ -1,6 +1,6 @@
 const STATS_KEY = 'general-yatzy-stats';
 
-const EMPTY_STATS = { played: 0, wins: 0, losses: 0, ties: 0, recordedGameIds: [] };
+const EMPTY_STATS = { played: 0, wins: 0, losses: 0, ties: 0, bestScore: 0, recordedGameIds: [] };
 // Only recent ids are needed to stop a finished game from being counted twice.
 const MAX_TRACKED_IDS = 20;
 
@@ -11,7 +11,8 @@ export const loadStats = () => {
     const s = JSON.parse(localStorage.getItem(STATS_KEY));
     if (s && isCount(s.played) && isCount(s.wins) && isCount(s.losses) && isCount(s.ties) &&
         Array.isArray(s.recordedGameIds)) {
-      return s;
+      // Older saves predate bestScore
+      return { ...s, bestScore: isCount(s.bestScore) ? s.bestScore : 0 };
     }
   } catch {
     // Corrupt or inaccessible stats - start fresh
@@ -19,7 +20,7 @@ export const loadStats = () => {
   return EMPTY_STATS;
 };
 
-export const recordResult = (gameId, outcome) => {
+export const recordResult = (gameId, outcome, playerScore) => {
   const stats = loadStats();
   if (stats.recordedGameIds.includes(gameId)) return;
   const key = { win: 'wins', loss: 'losses', tie: 'ties' }[outcome];
@@ -27,6 +28,7 @@ export const recordResult = (gameId, outcome) => {
     ...stats,
     played: stats.played + 1,
     [key]: stats[key] + 1,
+    bestScore: Math.max(stats.bestScore, playerScore),
     recordedGameIds: [...stats.recordedGameIds, gameId].slice(-MAX_TRACKED_IDS),
   };
   try {

@@ -40,8 +40,8 @@ function App() {
   }, [state]);
 
   useEffect(() => {
-    if (outcome) recordResult(gameId, outcome);
-  }, [gameId, outcome]);
+    if (outcome) recordResult(gameId, outcome, calculateTotal(scores.player));
+  }, [gameId, outcome, scores.player]);
 
   useEffect(() => {
     if (!rolling.some(Boolean)) return;
@@ -174,6 +174,7 @@ function App() {
               <span>Ties</span><span>{stats.ties}</span>
               <span>Win rate</span>
               <span>{stats.played > 0 ? `${Math.round((stats.wins / stats.played) * 100)}%` : '-'}</span>
+              <span>Best score</span><span>{stats.played > 0 ? stats.bestScore : '-'}</span>
             </div>
             <div className="stats-actions">
               <button className="restart-btn" onClick={() => setStats(null)}>Close</button>
