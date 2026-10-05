@@ -44,10 +44,54 @@ body {
 }
 
 .header-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 5px 0;
+}
+
+.header-actions {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 6px;
+}
+
+.header-btn {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--board-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.header-btn:hover {
+  color: var(--text-main);
+  border-color: var(--btn-bg);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 24px;
+  margin: 16px 0 20px;
+  text-align: left;
+  font-size: 1.05rem;
+}
+
+.stats-grid span:nth-child(even) {
+  font-weight: bold;
+  text-align: right;
+}
+
+.stats-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
 
 h1 {

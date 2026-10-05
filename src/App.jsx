@@ -1,126 +1,82 @@
-import { useState, useEffect } from 'react';
-import { CATEGORIES, CATEGORY_NAMES, calculateScore, calculateUpperTotal } from './gameLogic';
+import { useReducer, useEffect, useState } from 'react';
+import { CATEGORIES, CATEGORY_NAMES, calculateScore, calculateUpperTotal, calculateTotal } from './gameLogic';
 import { getBotAction } from './botLogic';
+import { gameReducer, loadGame, saveGame, isGameOver as checkGameOver, randomDice, newGameId } from './gameState';
+import { loadStats, recordResult, resetStats } from './stats';
 import './App.css';
 
-const INITIAL_DICE = [1, 1, 1, 1, 1];
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 function App() {
-  const [dice, setDice] = useState(INITIAL_DICE);
-  const [held, setHeld] = useState([false, false, false, false, false]);
-  const [rollingDice, setRollingDice] = useState([false, false, false, false, false]);
-  const [diceOrder, setDiceOrder] = useState([0, 1, 2, 3, 4]);
-  const [rollsLeft, setRollsLeft] = useState(3);
-  const [turn, setTurn] = useState('player');
-  const [scores, setScores] = useState({ player: {}, bot: {} });
-  const [message, setMessage] = useState("Your turn! Roll the dice.");
-  const [history, setHistory] = useState([]);
-
-  // Check if every category is filled for both players
-  const isGameOver = Object.keys(scores.player).length === CATEGORIES.length && 
-                     Object.keys(scores.bot).length === CATEGORIES.length;
+  const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
+  const [stats, setStats] = useState(null);
+  const { dice, held, rolling, diceOrder, rollsLeft, turn, scores, message, history, gameId } = state;
+  const isGameOver = checkGameOver(scores);
 
   let winnerMessage = "";
+  let outcome = null;
   if (isGameOver) {
-    const pUpper = calculateUpperTotal(scores.player);
-    const bUpper = calculateUpperTotal(scores.bot);
-    const pTotal = Object.values(scores.player).reduce((a, b) => a + b, 0) + pUpper.bonus;
-    const bTotal = Object.values(scores.bot).reduce((a, b) => a + b, 0) + bUpper.bonus;
+    const pTotal = calculateTotal(scores.player);
+    const bTotal = calculateTotal(scores.bot);
 
-    if (pTotal > bTotal) winnerMessage = `🏆 You win! ${pTotal} to ${bTotal}`;
-    else if (bTotal > pTotal) winnerMessage = `🤖 Bot wins! ${bTotal} to ${pTotal}`;
-    else winnerMessage = `🤝 It's a tie! ${pTotal} to ${bTotal}`;
+    if (pTotal > bTotal) {
+      outcome = 'win';
+      winnerMessage = `🏆 You win! ${pTotal} to ${bTotal}`;
+    } else if (bTotal > pTotal) {
+      outcome = 'loss';
+      winnerMessage = `🤖 Bot wins! ${bTotal} to ${pTotal}`;
+    } else {
+      outcome = 'tie';
+      winnerMessage = `🤝 It's a tie! ${pTotal} to ${bTotal}`;
+    }
   }
 
-  const resetGame = () => {
-    setScores({ player: {}, bot: {} });
-    setDice(INITIAL_DICE);
-    setHeld([false, false, false, false, false]);
-    setRollingDice([false, false, false, false, false]);
-    setDiceOrder([0, 1, 2, 3, 4]);
-    setRollsLeft(3);
-    setTurn('player');
-    setMessage("Your turn! Roll the dice.");
-    setHistory([]);
-  };
-
-  const rollDice = (currentHeld = held) => {
-    if (rollsLeft === 0 || isGameOver) return;
-    // Briefly flag the non-held dice so the CSS animation can play
-    setRollingDice(currentHeld.map(h => !h));
-    setDice(prev => prev.map((d, i) => currentHeld[i] ? d : Math.floor(Math.random() * 6) + 1));
-    setRollsLeft(prev => prev - 1);
-    // Held dice only shift to the front once a new roll happens, not on click
-    setDiceOrder([0, 1, 2, 3, 4].sort((a, b) => (currentHeld[b] ? 1 : 0) - (currentHeld[a] ? 1 : 0)));
-    setTimeout(() => setRollingDice([false, false, false, false, false]), 300);
-  };
-
-  const toggleHold = (index) => {
-    if (rollsLeft === 3 || turn !== 'player' || isGameOver) return;
-    const newHeld = [...held];
-    newHeld[index] = !newHeld[index];
-    setHeld(newHeld);
-  };
-
-  const scoreCategory = (category) => {
-    if (scores[turn][category] !== undefined || rollsLeft === 3 || isGameOver) return;
-    
-    const points = calculateScore(dice, category, scores[turn]);
-    
-    setHistory(prev => [
-      { id: Date.now(), player: turn, category, dice: [...dice], points },
-      ...prev
-    ]);
-
-    setScores(prev => ({
-      ...prev,
-      [turn]: { ...prev[turn], [category]: points }
-    }));
-    
-    endTurn();
-  };
-
-  const endTurn = () => {
-    setHeld([false, false, false, false, false]);
-    setRollingDice([false, false, false, false, false]);
-    setDiceOrder([0, 1, 2, 3, 4]);
-    setRollsLeft(3);
-    setDice([1, 1, 1, 1, 1]);
-    setTurn(turn === 'player' ? 'bot' : 'player');
-    setMessage(turn === 'player' ? "Bot is thinking..." : "Your turn! Roll the dice.");
-  };
+  const startNewGame = () => dispatch({ type: 'RESET', gameId: newGameId() });
 
   useEffect(() => {
-    const playBotTurn = async () => {
-      if (turn !== 'bot' || isGameOver) return;
+    saveGame(state);
+  }, [state]);
 
+  useEffect(() => {
+    if (outcome) recordResult(gameId, outcome);
+  }, [gameId, outcome]);
+
+  useEffect(() => {
+    if (!rolling.some(Boolean)) return;
+    const timer = setTimeout(() => dispatch({ type: 'ROLL_ANIMATION_END' }), 300);
+    return () => clearTimeout(timer);
+  }, [rolling]);
+
+  useEffect(() => {
+    if (turn !== 'bot' || isGameOver) return;
+    // Stops a stale bot step after reset, unmount, or StrictMode's double effect run
+    let cancelled = false;
+    const wait = async (ms) => {
+      await delay(ms);
+      return !cancelled;
+    };
+
+    const playBotStep = async () => {
       if (rollsLeft === 3) {
-        await delay(1000);
-        rollDice([false, false, false, false, false]);
+        if (await wait(1000)) dispatch({ type: 'ROLL', player: 'bot', values: randomDice() });
         return;
       }
 
-      await delay(1000); 
+      if (!(await wait(1000))) return;
       const decision = getBotAction(dice, scores.bot, rollsLeft);
 
-      if (decision.action === 'hold' && rollsLeft > 0) {
-        setMessage(`Bot holds dice...`);
-        const newHeld = [false, false, false, false, false];
-        decision.holdIndices.forEach(i => newHeld[i] = true);
-        setHeld(newHeld);
-        
-        await delay(1000);
-        rollDice(newHeld); 
-      } else if (decision.action === 'score') {
-        setMessage(`Bot scores in ${CATEGORY_NAMES[decision.category]}`);
-        await delay(1500);
-        scoreCategory(decision.category);
+      if (decision.action === 'hold') {
+        dispatch({ type: 'BOT_HOLD', held: dice.map((_, i) => decision.holdIndices.includes(i)) });
+        if (await wait(1000)) dispatch({ type: 'ROLL', player: 'bot', values: randomDice() });
+      } else {
+        dispatch({ type: 'SET_MESSAGE', message: `Bot scores in ${CATEGORY_NAMES[decision.category]}` });
+        if (await wait(1500)) dispatch({ type: 'SCORE', player: 'bot', category: decision.category });
       }
     };
 
-    playBotTurn();
-  }, [turn, rollsLeft, dice, isGameOver]);
+    playBotStep();
+    return () => { cancelled = true; };
+  }, [turn, rollsLeft, dice, scores, isGameOver]);
 
   const renderCategoryRow = (cat, playerKey) => {
     const isAvailable = scores[playerKey][cat] === undefined;
@@ -132,7 +88,7 @@ function App() {
       <div 
         key={cat} 
         className={`score-row ${isAvailable ? 'open' : 'filled'} ${isScorable ? 'scorable' : ''}`}
-        onClick={() => isAvailable && showPreview && scoreCategory(cat)}
+        onClick={() => isAvailable && showPreview && dispatch({ type: 'SCORE', player: 'player', category: cat })}
       >
         <span>{CATEGORY_NAMES[cat]}</span>
         <span>
@@ -146,7 +102,7 @@ function App() {
 
   const renderScorecard = (playerKey) => {
     const upper = calculateUpperTotal(scores[playerKey]);
-    const total = Object.values(scores[playerKey]).reduce((a, b) => a + b, 0) + upper.bonus;
+    const total = calculateTotal(scores[playerKey]);
 
     const upperCategories = CATEGORIES.slice(0, 6);
     const lowerCategories = CATEGORIES.slice(6);
@@ -175,13 +131,51 @@ function App() {
           <div className="game-over-modal">
             <h2>Game Over!</h2>
             <p className="winner-announcement">{winnerMessage}</p>
-            <button onClick={resetGame} className="restart-btn">Play Again</button>
+            <button onClick={startNewGame} className="restart-btn">Play Again</button>
+          </div>
+        </div>
+      )}
+
+      {stats && (
+        <div className="game-over-overlay" onClick={() => setStats(null)}>
+          <div className="game-over-modal stats-modal" onClick={e => e.stopPropagation()}>
+            <h2>Statistics</h2>
+            <div className="stats-grid">
+              <span>Games played</span><span>{stats.played}</span>
+              <span>Wins</span><span>{stats.wins}</span>
+              <span>Losses</span><span>{stats.losses}</span>
+              <span>Ties</span><span>{stats.ties}</span>
+              <span>Win rate</span>
+              <span>{stats.played > 0 ? `${Math.round((stats.wins / stats.played) * 100)}%` : '-'}</span>
+            </div>
+            <div className="stats-actions">
+              <button className="restart-btn" onClick={() => setStats(null)}>Close</button>
+              <button
+                className="header-btn"
+                onClick={() => {
+                  if (!window.confirm('Reset all statistics?')) return;
+                  resetStats();
+                  setStats(loadStats());
+                }}
+              >
+                Reset Stats
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       <div className="header-container">
         <h1>Yatzy: The General</h1>
+        <div className="header-actions">
+          <button className="header-btn" onClick={() => setStats(loadStats())}>Stats</button>
+          <button
+            className="header-btn"
+            onClick={() => window.confirm('Start a new game? Current progress will be lost.') && startNewGame()}
+          >
+            New Game
+          </button>
+        </div>
       </div>
       
       <div className="game-status">{isGameOver ? "Game Finished!" : message}</div>
@@ -199,15 +193,15 @@ function App() {
               {diceOrder.map(i => (
                   <div
                     key={i}
-                    className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')} ${rollingDice[i] ? 'rolling' : ''}`}
-                    onClick={() => toggleHold(i)}
+                    className={`die ${rollsLeft === 3 ? 'unrolled' : (held[i] ? 'held' : '')} ${rolling[i] ? 'rolling' : ''}`}
+                    onClick={() => dispatch({ type: 'TOGGLE_HOLD', index: i })}
                   >
                     {rollsLeft === 3 ? '?' : dice[i]}
                   </div>
                 ))}
             </div>
             
-            <button className="roll-btn" onClick={() => rollDice()} disabled={turn !== 'player' || rollsLeft === 0 || isGameOver}>
+            <button className="roll-btn" onClick={() => dispatch({ type: 'ROLL', player: 'player', values: randomDice() })} disabled={turn !== 'player' || rollsLeft === 0 || isGameOver}>
               Roll ({rollsLeft} left)
             </button>
           </div>

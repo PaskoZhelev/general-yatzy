@@ -98,3 +98,6 @@ export const calculateUpperTotal = (scores) => {
   const sum = upperKeys.reduce((acc, key) => acc + (scores[key] || 0), 0);
   return { sum, bonus: sum >= 63 ? 50 : 0 };
 };
+
+export const calculateTotal = (scores) =>
+  Object.values(scores).reduce((a, b) => a + b, 0) + calculateUpperTotal(scores).bonus;
