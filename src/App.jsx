@@ -166,14 +166,14 @@ function App() {
       )}
 
       <div className="header-container">
-        <button className="header-btn stats-btn" onClick={() => setStats(loadStats())}>Stats</button>
-        <h1>Yatzy: The General</h1>
         <button
           className="header-btn new-game-btn"
           onClick={() => window.confirm('Start a new game? Current progress will be lost.') && startNewGame()}
         >
           New Game
         </button>
+        <h1>Yatzy: The General</h1>
+        <button className="header-btn stats-btn" onClick={() => setStats(loadStats())}>Stats</button>
       </div>
       
       <div className="game-status">{isGameOver ? "Game Finished!" : message}</div>

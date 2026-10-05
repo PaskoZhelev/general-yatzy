@@ -51,11 +51,11 @@ body {
   margin: 5px 0;
 }
 
-.stats-btn {
+.new-game-btn {
   justify-self: start;
 }
 
-.new-game-btn {
+.stats-btn {
   justify-self: end;
 }
 
