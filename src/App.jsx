@@ -6,6 +6,8 @@ import { loadStats, recordResult, resetStats } from './stats';
 import './App.css';
 
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
+const LEFT_COLUMN = CATEGORIES.slice(0, 9);
+const RIGHT_COLUMN = CATEGORIES.slice(9);
 
 function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
@@ -78,46 +80,71 @@ function App() {
     return () => { cancelled = true; };
   }, [turn, rollsLeft, dice, scores, isGameOver]);
 
-  const renderCategoryRow = (cat, playerKey) => {
-    const isAvailable = scores[playerKey][cat] === undefined;
-    const showPreview = turn === playerKey && playerKey === 'player' && rollsLeft < 3 && !isGameOver;
-    const previewScore = showPreview ? calculateScore(dice, cat, scores[playerKey]) : null;
-    const isScorable = isAvailable && showPreview && previewScore > 0;
-    
+  const lastMove = history[0];
+
+  const renderRow = (cat) => {
+    const myScore = scores.player[cat];
+    const botScore = scores.bot[cat];
+    const canPick = myScore === undefined && turn === 'player' && rollsLeft < 3 && !isGameOver;
+    const preview = canPick ? calculateScore(dice, cat, scores.player) : null;
+    const lastBy = lastMove?.category === cat ? lastMove.player : null;
+
     return (
-      <div 
-        key={cat} 
-        className={`score-row ${isAvailable ? 'open' : 'filled'} ${isScorable ? 'scorable' : ''}`}
-        onClick={() => isAvailable && showPreview && dispatch({ type: 'SCORE', player: 'player', category: cat })}
+      <button
+        type="button"
+        key={cat}
+        className={`board-row ${canPick ? 'pickable' : ''} ${canPick && preview > 0 ? 'scorable' : ''} ${cat === 'sixes' ? 'section-end' : ''}`}
+        disabled={!canPick}
+        onClick={() => dispatch({ type: 'SCORE', player: 'player', category: cat })}
       >
-        <span>{CATEGORY_NAMES[cat]}</span>
-        <span>
-          {!isAvailable 
-            ? scores[playerKey][cat] 
-            : (showPreview ? previewScore : '-')}
+        <span className="row-label">{CATEGORY_NAMES[cat]}</span>
+        <span className={`score-box player ${myScore !== undefined ? 'filled' : (canPick ? 'preview' : 'empty')} ${lastBy === 'player' ? 'last' : ''}`}>
+          {myScore ?? (canPick ? preview : '')}
         </span>
-      </div>
+        <span className={`score-box bot ${botScore !== undefined ? 'filled' : 'empty'} ${lastBy === 'bot' ? 'last' : ''}`}>
+          {botScore ?? ''}
+        </span>
+      </button>
     );
   };
 
-  const renderScorecard = (playerKey) => {
-    const upper = calculateUpperTotal(scores[playerKey]);
-    const total = calculateTotal(scores[playerKey]);
+  const renderColumn = (categories) => (
+    <div className="board-column">
+      <div className="board-header">
+        <span />
+        <span className={`col-label player ${turn === 'player' && !isGameOver ? 'active' : ''}`}>Me</span>
+        <span className={`col-label bot ${turn === 'bot' && !isGameOver ? 'active' : ''}`}>Bot</span>
+      </div>
+      {categories.map(renderRow)}
+    </div>
+  );
 
-    const upperCategories = CATEGORIES.slice(0, 6);
-    const lowerCategories = CATEGORIES.slice(6);
+  const renderSummary = () => {
+    const pUpper = calculateUpperTotal(scores.player);
+    const bUpper = calculateUpperTotal(scores.bot);
+    const items = [
+      { label: 'Upper / 63', me: pUpper.sum, bot: bUpper.sum, meDone: pUpper.sum >= 63, botDone: bUpper.sum >= 63 },
+      { label: 'Bonus', me: pUpper.bonus, bot: bUpper.bonus, meDone: pUpper.bonus > 0, botDone: bUpper.bonus > 0 },
+      { label: 'Total', me: calculateTotal(scores.player), bot: calculateTotal(scores.bot), className: 'total' },
+    ];
 
     return (
-      <div className={`scorecard ${playerKey}`}>
-        <h3>{playerKey.toUpperCase()}</h3>
-        {upperCategories.map(cat => renderCategoryRow(cat, playerKey))}
-        <div className="score-row subtotal">
-          <span>Upper Sum</span>
-          <span style={{ color: upper.sum >= 63 ? 'var(--success-color)' : 'inherit' }}>{upper.sum} / 63</span>
-        </div>
-        {lowerCategories.map(cat => renderCategoryRow(cat, playerKey))}
-        <div className="score-row bonus"><span>Bonus:</span><span>{upper.bonus}</span></div>
-        <div className="score-row total"><span>TOTAL:</span><span>{total}</span></div>
+      <div className="board-summary">
+        {items.map(item => (
+          <div key={item.label} className={`summary-item ${item.className ?? ''}`}>
+            <span className="summary-label">{item.label}</span>
+            <div className="summary-boxes">
+              <div className="summary-cell">
+                <span className="summary-who">Me</span>
+                <span className={`score-box player filled ${item.meDone ? 'achieved' : ''}`}>{item.me}</span>
+              </div>
+              <div className="summary-cell">
+                <span className="summary-who">Bot</span>
+                <span className={`score-box bot filled ${item.botDone ? 'achieved' : ''}`}>{item.bot}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
@@ -179,9 +206,12 @@ function App() {
       <div className="game-status">{isGameOver ? "Game Finished!" : message}</div>
       
       <div className="main-layout">
-        <div className="boards-container">
-          {renderScorecard('player')}
-          {renderScorecard('bot')}
+        <div className="board">
+          <div className="board-columns">
+            {renderColumn(LEFT_COLUMN)}
+            {renderColumn(RIGHT_COLUMN)}
+          </div>
+          {renderSummary()}
         </div>
 
         <div className="right-panel">
