@@ -136,11 +136,11 @@ function App() {
             <div className="summary-boxes">
               <div className="summary-cell">
                 <span className="summary-who">Me</span>
-                <span className={`score-box player filled ${item.meDone ? 'achieved' : ''}`}>{item.me}</span>
+                <span className={`score-box filled ${item.meDone ? 'achieved' : ''}`}>{item.me}</span>
               </div>
               <div className="summary-cell">
                 <span className="summary-who">Bot</span>
-                <span className={`score-box bot filled ${item.botDone ? 'achieved' : ''}`}>{item.bot}</span>
+                <span className={`score-box filled ${item.botDone ? 'achieved' : ''}`}>{item.bot}</span>
               </div>
             </div>
           </div>
