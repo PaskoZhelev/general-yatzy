@@ -513,8 +513,11 @@ h1 {
   }
 
   .controls-container {
-    order: -1; /* Pushes the dice and roll button to the very top */
-    position: static;
+    order: 1; /* Dice below the board, within thumb reach */
+    position: sticky;
+    bottom: 6px;
+    z-index: 10;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
     flex-direction: row;
     justify-content: space-around;
     width: 100%;
@@ -523,11 +526,11 @@ h1 {
   }
   
   .board {
-    order: 0; /* Keeps the board in the middle */
+    order: 0;
   }
 
   .history-container {
-    order: 1; /* Pushes the history log to the very bottom */
+    order: 2; /* Pushes the history log to the very bottom */
     width: 100%;
     max-width: 600px;
     margin-bottom: 30px; /* Adds a little breathing room at the bottom of the page */
